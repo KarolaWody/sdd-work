@@ -25,11 +25,6 @@ At the end of each SDD step, write a `specs/state.md` summary with:
 - `specs/state.md` is registered in `opencode.json` `instructions` —
   every new OpenCode session loads it automatically
 
-## Commands
-```bash
-opencode run skill/sdd_work.md
-```
-
 ## SDD Workflow
 1. **Constitution** — mission.md, tech-stack.md, roadmap.md
 2. **Feature spec** — plan.md, requirements.md, validation.md

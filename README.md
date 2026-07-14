@@ -24,24 +24,31 @@ opencode --version
 ```
 Jeśli widzisz numer wersji — idziesz dalej. Jeśli nie — najpierw [zainstaluj OpenCode](https://opencode.ai).
 
-### 3. Znajdź folder konfiguracyjny OpenCode
-```bash
-ls ~/.config/opencode/
-```
-Jeśli widzisz pliki (np. `opencode.json`) — wszystko gra.
-
-### 4. Sklonuj to repozytorium
+### 3. Sklonuj to repozytorium
 ```bash
 git clone https://github.com/KarolaWody/sdd-work /tmp/sdd-work
 ```
 
-### 5. Skopiuj skill do OpenCode
+### 4. Lokalnie czy globalnie?
+Zdecyduj gdzie chcesz zainstalować skilla:
+
+- **Lokalnie** — skill działa tylko w bieżącym projekcie
+- **Globalnie** — skill działa we wszystkich projektach
+
+#### Instalacja lokalna (dla jednego projektu)
+W katalogu głównym TWOJEGO projektu (tam gdzie chcesz używać skilla):
+```bash
+mkdir -p .opencode/skills
+cp -r /tmp/sdd-work/skills/sdd-work .opencode/skills/sdd-work
+```
+
+#### Instalacja globalna (dla wszystkich projektów)
 ```bash
 mkdir -p ~/.config/opencode/skills
 cp -r /tmp/sdd-work/skills/sdd-work ~/.config/opencode/skills/sdd-work
 ```
 
-### 6. Gotowe!
+### 5. Gotowe!
 Uruchom OpenCode w terminalu:
 ```bash
 opencode
