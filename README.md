@@ -32,17 +32,21 @@ Jeśli widzisz pliki (np. `opencode.json`) — wszystko gra.
 
 ### 4. Sklonuj to repozytorium
 ```bash
-git clone https://github.com/anomalyco/opencode /tmp/sdd-work
+git clone https://github.com/KarolaWody/sdd-work /tmp/sdd-work
 ```
-(Zastąp URL właściwym adresem tego repozytorium)
 
 ### 5. Skopiuj skill do OpenCode
 ```bash
+mkdir -p ~/.config/opencode/skills
 cp -r /tmp/sdd-work/skills/sdd-work ~/.config/opencode/skills/sdd-work
 ```
 
 ### 6. Gotowe!
-Uruchom OpenCode. Skill `sdd-work` będzie automatycznie dostępny. Agent sam go zaproponuje gdy będzie pasował do zadania, albo możesz napisać: "użyj skilla sdd-work".
+Uruchom OpenCode w terminalu:
+```bash
+opencode
+```
+Skill `sdd-work` będzie automatycznie dostępny. Agent sam go zaproponuje gdy będzie pasował do zadania, albo możesz napisać: "użyj skilla sdd-work".
 
 ## Użycie
 
