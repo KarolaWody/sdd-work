@@ -2,6 +2,19 @@
 
 `sdd-work` automates the Spec-Driven Development (SDD) workflow in OpenCode. It guides the agent through the full cycle: constitution, feature spec, implementation, validation, and replanning — with human-in-the-loop at every step.
 
+## About this project
+
+This is a **portfolio project** demonstrating Spec-Driven Development with AI assistance:
+
+- **Methodology:** Every feature goes through plan → spec → implementation → validation → iteration. No step proceeds without human approval.
+- **AI in the loop:** OpenCode agent drives development; `@code_checker` sub-agent performs automated code review before any merge.
+- **Tools:** Python, git/GitHub, OpenCode CLI, AI code review agents.
+- **Documentation-first:** All decisions, specs, and architecture are recorded and versioned alongside code.
+
+**Why this matters:** Software built by vibecoding alone is fragile. This project shows a structured, review-driven alternative — the way professional AI-assisted development should work.
+
+👉 [github.com/KarolaWody/sdd-work](https://github.com/KarolaWody/sdd-work)
+
 ## Workflow
 
 1. **Constitution** — define mission, tech stack, and roadmap via agent interview
