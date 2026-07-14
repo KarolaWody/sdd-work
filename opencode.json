@@ -1,0 +1,12 @@
+{
+  "$schema": "https://opencode.ai/config.json",
+  "agent": {
+    "code_checker": {
+      "description": "Scans project code, finds 3+ weakest spots, explains why, and proposes simpler/optimal solutions",
+      "mode": "subagent"
+    }
+  },
+  "instructions": [
+    "specs/state.md"
+  ]
+}
