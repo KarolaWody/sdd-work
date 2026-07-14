@@ -10,57 +10,57 @@
 4. **Validation** — human review + `@code_checker` AI code review; no merge without approval
 5. **Replanning** — update constitution and process, approved by user
 
-## Instalacja krok po kroku (dla początkujących)
+## Step-by-step installation (for beginners)
 
-Potrzebujesz tylko terminala i OpenCode. Oto jak zainstalować tego skilla:
+You only need a terminal and OpenCode. Here's how to install this skill:
 
-### 1. Otwórz terminal
-Na Linux: `Ctrl` + `Alt` + `T`. Na Mac: `Cmd` + `Spacja`, wpisz "terminal".
+### 1. Open a terminal
+On Linux: `Ctrl` + `Alt` + `T`. On Mac: `Cmd` + `Space`, type "terminal".
 
-### 2. Sprawdź czy OpenCode jest zainstalowane
-Wpisz w terminalu:
+### 2. Check if OpenCode is installed
+Type in terminal:
 ```bash
 opencode --version
 ```
-Jeśli widzisz numer wersji — idziesz dalej. Jeśli nie — najpierw [zainstaluj OpenCode](https://opencode.ai).
+If you see a version number — you're good. If not — first [install OpenCode](https://opencode.ai).
 
-### 3. Sklonuj to repozytorium
+### 3. Clone this repository
 ```bash
 git clone https://github.com/KarolaWody/sdd-work /tmp/sdd-work
 ```
 
-### 4. Lokalnie czy globalnie?
-Zdecyduj gdzie chcesz zainstalować skilla:
+### 4. Local or global?
+Decide where to install the skill:
 
-- **Lokalnie** — skill działa tylko w bieżącym projekcie
-- **Globalnie** — skill działa we wszystkich projektach
+- **Local** — skill works only in the current project
+- **Global** — skill works in all projects
 
-#### Instalacja lokalna (dla jednego projektu)
-W katalogu głównym TWOJEGO projektu (tam gdzie chcesz używać skilla):
+#### Local install (single project)
+In the root directory of YOUR project (where you want to use the skill):
 ```bash
 mkdir -p .opencode/skills
 cp -r /tmp/sdd-work/skills/sdd-work .opencode/skills/sdd-work
 ```
 
-#### Instalacja globalna (dla wszystkich projektów)
+#### Global install (all projects)
 ```bash
 mkdir -p ~/.config/opencode/skills
 cp -r /tmp/sdd-work/skills/sdd-work ~/.config/opencode/skills/sdd-work
 ```
 
-### 5. Gotowe!
-Uruchom OpenCode w terminalu:
+### 5. Done!
+Run OpenCode in terminal:
 ```bash
 opencode
 ```
-Skill `sdd-work` będzie automatycznie dostępny. Agent sam go zaproponuje gdy będzie pasował do zadania, albo możesz napisać: "użyj skilla sdd-work".
+Skill `sdd-work` will be available automatically. The agent will suggest it when relevant, or you can type: "use skill sdd-work".
 
-## Użycie
+## Usage
 
-Gdy skill jest zainstalowany, po prostu pracuj z agentem OpenCode. Agent sam rozpozna kiedy użyć skilla `sdd-work`. Możesz też jawnie poprosić:
+Once the skill is installed, just work with the OpenCode agent. The agent will recognize when to use the `sdd-work` skill. You can also explicitly ask:
 
 ```
-użyj skilla sdd-work. Chcę zacząć nowy projekt.
+use skill sdd-work. I want to start a new project.
 ```
 
 ## Stack
@@ -68,9 +68,9 @@ użyj skilla sdd-work. Chcę zacząć nowy projekt.
 - OpenCode CLI
 - SDD methodology
 
-## Pliki w repozytorium
-- `skills/sdd-work/SKILL.md` — definicja skilla
-- `docs/agent.md` — prompt i workflow agenta
-- `docs/examples.md` — przykłady użycia
-- `docs/tools-vscode.md` — wymagane rozszerzenia VSCode
-- `opencode.json` — konfiguracja projektu z sub-agentem `@code_checker`
+## Files in this repo
+- `skills/sdd-work/SKILL.md` — skill definition
+- `docs/agent.md` — agent prompt and workflow
+- `docs/examples.md` — usage examples
+- `docs/tools-vscode.md` — required VSCode extensions
+- `opencode.json` — project config with `@code_checker` sub-agent
