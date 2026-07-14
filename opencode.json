@@ -8,5 +8,18 @@
   },
   "instructions": [
     "specs/state.md"
-  ]
+  ],
+  "permission": {
+    "bash": {
+      "*": "ask",
+      "git *": "allow",
+      "git commit *": "ask",
+      "git push *": "ask",
+      "grep *": "allow",
+      "ls *": "allow",
+      "mkdir *": "allow",
+      "python *": "allow",
+      "pip *": "allow"
+    }
+  }
 }
