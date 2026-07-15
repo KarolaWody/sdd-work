@@ -23,6 +23,9 @@ At the end of each step, write `specs/state.md` with:
 Enables model handoff — new model reads this file to continue.
 
 ## Rules
+- **One step at a time.** Agent does exactly ONE task from the plan, then stops and presents to user. No grouping multiple tasks.
+- **Ask first.** Agent must ask user for a specific decision before proceeding. No assumptions of consent.
+- **Wait for answer.** Agent waits for an explicit answer to the question asked. No proceeding without a clear user response.
 - Human-in-the-loop always. No autonomous changes.
 - English only.
 - Small steps, frequent commits.
