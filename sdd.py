@@ -4,6 +4,7 @@
 import argparse
 import os
 import re
+import shlex
 import shutil
 import subprocess
 import sys
@@ -29,21 +30,32 @@ TEMPLATES_DIR = _get_templates_dir()
 _FEATURE_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
 
 
-def _has_content(path, min_chars=50):
+def _has_content(path, min_chars=200):
     if not path.exists():
         return False
-    text = path.read_text().strip()
-    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL).strip()
-    return len(text) >= min_chars
+    text = path.read_text()
+    text = re.sub(r"<!--[\s\S]*?-->", "", text)
+    lines = [ln for ln in text.splitlines() if ln.strip() and not ln.strip().startswith("<!--")]
+    content = "\n".join(lines).strip()
+    return len(content) >= min_chars
 
 
 def _sanitize_md(text, max_len=2000):
     if not text:
         return ""
-    text = text[:max_len]
-    for ch in ['`', '*', '_', '#', '>', '|', '[', ']', '(', ')']:
-        text = text.replace(ch, f"\\{ch}")
-    return " ".join(text.splitlines())
+    if len(text) > max_len:
+        print(f"Warning: text truncated to {max_len} chars", file=sys.stderr)
+        text = text[:max_len]
+    lines = text.splitlines()
+    result = []
+    for line in lines:
+        stripped = line.lstrip()
+        if stripped and stripped[0] in ('#', '>', '|', '-', '*', '+', '`', '_'):
+            line = line[:len(line) - len(stripped)] + '\\' + stripped
+        elif re.match(r'^\d{1,3}\.\s', stripped):
+            line = line[:len(line) - len(stripped)] + '\\' + stripped[:2] + stripped[2:]
+        result.append(line)
+    return '\n'.join(result)
 
 
 def _load_template(name):
@@ -56,14 +68,47 @@ def _load_template(name):
     return path.read_text()
 
 
+def _is_interactive():
+    return sys.stdin.isatty()
+
+
+def _confirm(prompt, default=False):
+    if not _is_interactive():
+        return default
+    answer = input(f"{prompt} [y/N] ").strip().lower()
+    return answer in ('y', 'yes', 't', 'tak')
+
+
+def _prompt_input(prompt, default=""):
+    if not _is_interactive():
+        return default
+    return input(f"{prompt} ").strip() or default
+
+
 def _run_code_checker():
-    cmd = os.environ.get("SDD_CODE_CHECKER_CMD", "opencode run @code_checker").split()
-    if not shutil.which(cmd[0]):
-        print("Warning: 'opencode' not found. Run '@code_checker' manually.", file=sys.stderr)
+    cmd_str = os.environ.get("SDD_CODE_CHECKER_CMD", "opencode run @code_checker")
+    if not cmd_str.strip():
+        print("Warning: SDD_CODE_CHECKER_CMD is empty", file=sys.stderr)
         return False
     try:
-        subprocess.run(cmd, check=True, timeout=120)
+        argv = shlex.split(cmd_str)
+    except ValueError as e:
+        print(f"Warning: invalid SDD_CODE_CHECKER_CMD value: {e}", file=sys.stderr)
+        return False
+    if not argv:
+        print("Warning: SDD_CODE_CHECKER_CMD produced empty command", file=sys.stderr)
+        return False
+    cmd_name = argv[0]
+    if not shutil.which(cmd_name):
+        print(f"Warning: '{cmd_name}' not found. Run '@code_checker' manually.", file=sys.stderr)
+        return False
+    try:
+        subprocess.run(argv, check=True, timeout=120)
         return True
+    except FileNotFoundError:
+        print(f"Warning: '{cmd_name}' not found at execution time", file=sys.stderr)
+    except PermissionError:
+        print(f"Warning: '{cmd_name}' is not executable", file=sys.stderr)
     except subprocess.TimeoutExpired:
         print("Warning: code checker timed out after 120s", file=sys.stderr)
     except subprocess.CalledProcessError as e:
@@ -76,8 +121,7 @@ def cmd_init():
     overwrite = False
 
     if specs_dir.exists():
-        answer = input(f"'{specs_dir}/' already exists. Overwrite? [y/N] ")
-        if answer.lower() != "y":
+        if not _confirm(f"'{specs_dir}/' already exists. Overwrite?"):
             print("Aborted.")
             return
         overwrite = True
@@ -114,8 +158,7 @@ def cmd_feature(name):
     overwrite_val = specs_dir.joinpath("validation.md").exists()
 
     if overwrite_plan or overwrite_req or overwrite_val:
-        answer = input("Some feature spec files already exist. Overwrite? [y/N] ")
-        if answer.lower() != "y":
+        if not _confirm("Some feature spec files already exist. Overwrite?"):
             print("Aborted.")
             return
 
@@ -139,13 +182,17 @@ def cmd_state(show_current):
         print(state_path.read_text())
         return
 
+    if not _is_interactive():
+        print("Non-interactive; skipping state append. Use 'sdd state --current' to view.")
+        return
+
     content = state_path.read_text()
     print("Appending to specs/state.md...")
 
-    what = input("What was done? ")
-    decisions = input("Decisions made? ")
-    next_steps = input("Next steps? ")
-    issues = input("Pending issues? ")
+    what = _prompt_input("What was done?")
+    decisions = _prompt_input("Decisions made?")
+    next_steps = _prompt_input("Next steps?")
+    issues = _prompt_input("Pending issues?")
 
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     entry = (
@@ -188,6 +235,38 @@ def cmd_validate(run_checker=False):
         all_ok = False
     else:
         print("  feature spec: not started (optional)")
+
+    state_path = specs_dir / "state.md"
+    if state_path.exists():
+        print("\n=== State Sync Check ===")
+        state_text = state_path.read_text()
+        entries = re.findall(r'##\s*\[.*?\]', state_text)
+        if not entries:
+            if _has_content(state_path):
+                print("  state.md: has content but no timestamp entries (template only)")
+            else:
+                print("  state.md: no entries (empty state)")
+        else:
+            sync_ok = True
+            mentioned_files = re.findall(r'specs/([a-z0-9_-]+\.md)', state_text, re.IGNORECASE)
+            for f in set(mentioned_files):
+                path = specs_dir / f
+                if not path.exists():
+                    print(f"  state.md mentions specs/{f} but file not found")
+                    sync_ok = False
+                elif not _has_content(path):
+                    print(f"  state.md mentions specs/{f} but file is empty")
+                    sync_ok = False
+            existing_specs = sorted(p.name for p in specs_dir.glob("*.md") if p.name != "state.md")
+            for name in existing_specs:
+                if name not in mentioned_files and _has_content(specs_dir / name):
+                    print(f"  specs/{name} exists but is not mentioned in state.md")
+                    sync_ok = False
+            if sync_ok:
+                print(f"  state.md: {len(entries)} entries, sync check OK")
+            else:
+                print(f"  state.md: {len(entries)} entries, sync check FAILED")
+                all_ok = False
 
     if run_checker:
         print("\nRunning @code_checker...")

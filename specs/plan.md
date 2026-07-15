@@ -24,12 +24,19 @@
 11. Update `README.md` with installation/usage
 12. Update `specs/state.md`
 
+### Group 6: Automated tests
+13. Create `tests/test_sdd.py` with pytest
+14. Create `pyproject.toml` with pytest config
+15. Add test validation criteria to `specs/validation.md`
+16. Run `python -m pytest tests/` and verify all pass
+
 ## Dependencies
 - Python 3.10+ stdlib only (argparse, pathlib, datetime)
+- pytest (dev dependency, not required at runtime)
 - No pip install needed — user runs `python sdd.py`
 
 ## Order
-Group 1 → Group 2 → Group 3 → Group 4 → Group 5.
+Group 1 → Group 2 → Group 3 → Group 4 → Group 5 → Group 6.
 
 After EVERY group:
 1. Agent runs `@code_checker`

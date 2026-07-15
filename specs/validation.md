@@ -38,6 +38,13 @@
 17. Agent MUST NOT implement >1 group without approval
 18. Agent MUST NOT combine, skip, or reorder any steps
 
+### VC10 — Automated tests (pytest)
+19. `python -m pytest tests/` — all tests PASS
+20. Each command (init, feature, state, validate, status) has at least one test
+21. `_sanitize_md()` and `_has_content()` have direct unit tests
+22. Tests use `tempfile.TemporaryDirectory` (no side effects on real project)
+23. Non-interactive mode is tested (no hanging prompts)
+
 ## Test procedure
 ```bash
 # Create temp directory
