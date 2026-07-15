@@ -35,6 +35,13 @@ Users invoke it instead of manually creating spec files.
 ### FR5 — Status board
 - `sdd status` prints a summary of all spec files and their status (exists/missing/stale)
 
+### FR6 — Mandatory validation gate
+- After EVERY task group: agent MUST run `@code_checker`
+- Agent MUST present all findings to user
+- User MUST review and explicitly approve
+- Agent MUST NOT proceed to next group without approval
+- Agent MUST NOT combine or skip any group
+
 ## Non-functional requirements
 - Python 3.10+, no external dependencies (stdlib only)
 - Must work on Linux and macOS

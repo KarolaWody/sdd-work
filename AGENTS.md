@@ -26,24 +26,31 @@ At the end of each SDD step, write a `specs/state.md` summary with:
   every new OpenCode session loads it automatically
 
 ## SDD Workflow
+
+Agent MUST follow this sequence. No step may be skipped, combined, or reordered.
+
 1. **Constitution** — mission.md, tech-stack.md, roadmap.md
 2. **Feature spec** — plan.md, requirements.md, validation.md
-3. **Implementation** — agent implements per task groups
-4. **Validation** — agent presents changes, then **waits for human approval**
-   before any commit or merge. Run `@code_checker` sub-agent to scan code
-   for weakest spots (AI code review). No commit/merge without explicit OK.
-5. **Replanning** — agent proposes constitution updates and process improvements,
-   then waits for human approval before applying changes
+3. **Implementation + Validation (per group)**:
+   a. Agent MUST implement ONE task group from the plan
+   b. Agent MUST present all changes to user
+   c. Agent MUST run `@code_checker` sub-agent
+   d. Agent MUST present findings to user
+   e. User MUST review and explicitly approve
+   f. Agent MUST NOT proceed without explicit approval
+4. **Replanning** — agent proposes improvements. User MUST approve before applying.
+
+Stopping rule for EVERY step: agent MUST present the single next task and wait for explicit user answer. Without approval, agent MUST STOP and MUST NOT proceed.
 
 ## Conventions
-- English only for code, docs, and comments
-- Small steps with frequent commits
-- Specs are versioned — commit alongside code
-- Prefer CLI+Skills over MCP servers when possible
-- **Human-in-the-loop always** — agent must clearly communicate every pending
-  change to the user and wait for explicit confirmation before acting. No
-  autonomous decisions or silent changes. Without user approval, agent
-  cannot proceed and must inform the user.
+- **Human-in-the-loop.** Agent MUST present every change and MUST get explicit user approval. NO autonomous decisions. Without approval: agent MUST stop and MUST NOT proceed.
+- **One step at a time.** Agent MUST do exactly ONE task from plan, then stop and present. NO grouping, NO batching.
+- **@code_checker after EVERY group.** Agent MUST run after each task group. NO exceptions.
+- **Questions ≠ consent.** User questions, observations, or statements are NOT approval. Only explicit action commands ('fix', 'remove', 'do', 'change', 'implement', 'zrób', 'popraw', 'usuń') count as consent. After answering a question, agent MUST ask "Should I apply this change?" and wait for explicit 'yes' before acting.
+- English only for code, docs, and comments.
+- Small steps, frequent commits (ONLY after user approval).
+- Specs are versioned — commit alongside code.
+- Prefer CLI+Skills over MCP servers when possible.
 
 ## Questions asked to user (onboarding)
 When starting a new project, the skill asks 8 questions in 3 sections:

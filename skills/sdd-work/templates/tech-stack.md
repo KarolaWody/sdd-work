@@ -1,5 +1,7 @@
 # Tech Stack
 
+> Tip: Start simple (minimal viable stack). Add only what you need.
+
 | Layer | Technology | Cost | Notes |
 |---|---|---|---|
 | Language | | | |
@@ -13,3 +15,4 @@
 
 ## Conventions
 <!-- Coding style, naming, version requirements -->
+<!-- e.g. Python 3.10+, snake_case, English only -->

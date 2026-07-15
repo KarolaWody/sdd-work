@@ -3,18 +3,72 @@
 
 import argparse
 import os
+import re
+import shutil
+import subprocess
 import sys
 from datetime import datetime
 from pathlib import Path
 
-TEMPLATES_DIR = Path(__file__).resolve().parent / "skills" / "sdd-work" / "templates"
+
+def _get_templates_dir():
+    if env := os.environ.get("SDD_TEMPLATES_DIR"):
+        p = Path(env)
+        if p.exists():
+            return p
+    local = Path(__file__).resolve().parent / "skills" / "sdd-work" / "templates"
+    if local.exists():
+        return local
+    raise RuntimeError(
+        "Templates directory not found. "
+        "Set SDD_TEMPLATES_DIR env var or run from project root."
+    )
+
+
+TEMPLATES_DIR = _get_templates_dir()
+_FEATURE_NAME_PATTERN = re.compile(r"^[a-z0-9][a-z0-9_-]{0,63}$")
+
+
+def _has_content(path, min_chars=50):
+    if not path.exists():
+        return False
+    text = path.read_text().strip()
+    text = re.sub(r"<!--.*?-->", "", text, flags=re.DOTALL).strip()
+    return len(text) >= min_chars
+
+
+def _sanitize_md(text, max_len=2000):
+    if not text:
+        return ""
+    text = text[:max_len]
+    for ch in ['`', '*', '_', '#', '>', '|', '[', ']', '(', ')']:
+        text = text.replace(ch, f"\\{ch}")
+    return " ".join(text.splitlines())
 
 
 def _load_template(name):
     path = TEMPLATES_DIR / name
-    if path.exists():
-        return path.read_text()
-    return f"# {name}\n\n<!-- TODO: fill in -->\n"
+    if not path.exists():
+        available = [p.name for p in TEMPLATES_DIR.glob("*.md")]
+        raise FileNotFoundError(
+            f"Template not found: {name}. Available: {available}"
+        )
+    return path.read_text()
+
+
+def _run_code_checker():
+    cmd = os.environ.get("SDD_CODE_CHECKER_CMD", "opencode run @code_checker").split()
+    if not shutil.which(cmd[0]):
+        print("Warning: 'opencode' not found. Run '@code_checker' manually.", file=sys.stderr)
+        return False
+    try:
+        subprocess.run(cmd, check=True, timeout=120)
+        return True
+    except subprocess.TimeoutExpired:
+        print("Warning: code checker timed out after 120s", file=sys.stderr)
+    except subprocess.CalledProcessError as e:
+        print(f"Warning: code checker failed (exit {e.returncode})", file=sys.stderr)
+    return False
 
 
 def cmd_init():
@@ -47,6 +101,14 @@ def cmd_feature(name):
         print("Error: specs/ directory not found. Run 'sdd init' first.", file=sys.stderr)
         sys.exit(1)
 
+    if not _FEATURE_NAME_PATTERN.match(name):
+        print(
+            f"Error: '{name}' is not a valid feature name. "
+            "Use lowercase alphanumeric, hyphens, underscores (max 64 chars).",
+            file=sys.stderr,
+        )
+        sys.exit(1)
+
     overwrite_plan = specs_dir.joinpath("plan.md").exists()
     overwrite_req = specs_dir.joinpath("requirements.md").exists()
     overwrite_val = specs_dir.joinpath("validation.md").exists()
@@ -57,31 +119,12 @@ def cmd_feature(name):
             print("Aborted.")
             return
 
-    (specs_dir / "plan.md").write_text(
-        f"# Plan — {name}\n\n"
-        f"## Task groups\n\n"
-        f"1. TBD\n\n"
-        f"## Dependencies\n- none\n\n"
-        f"## Order\nTBD\n"
-    )
-    print(f"  Created specs/plan.md")
-
-    (specs_dir / "requirements.md").write_text(
-        f"# Requirements — {name}\n\n"
-        f"## Feature summary\n\n"
-        f"## Functional requirements\n\n"
-        f"### FR1 — TBD\n- none\n\n"
-        f"## Non-functional requirements\n- none\n"
-    )
-    print(f"  Created specs/requirements.md")
-
-    (specs_dir / "validation.md").write_text(
-        f"# Validation — {name}\n\n"
-        f"## Validation criteria\n\n"
-        f"### VC1 — TBD\n- none\n\n"
-        f"## Test procedure\n```bash\n# TODO\n```\n"
-    )
-    print(f"  Created specs/validation.md")
+    for tmpl, filename in [("plan.md", "plan.md"),
+                           ("requirements.md", "requirements.md"),
+                           ("validation.md", "validation.md")]:
+        content = _load_template(tmpl).replace("{{feature_name}}", name)
+        (specs_dir / filename).write_text(content)
+        print(f"  Created specs/{filename}")
 
     print(f"Done. Feature '{name}' scaffolding ready in specs/.")
 
@@ -107,50 +150,56 @@ def cmd_state(show_current):
     now = datetime.now().strftime("%Y-%m-%d %H:%M")
     entry = (
         f"\n## [{now}]\n"
-        f"- **Done:** {what}\n"
-        f"- **Decisions:** {decisions}\n"
-        f"- **Next:** {next_steps}\n"
-        f"- **Issues:** {issues}\n"
+        f"- **Done:** {_sanitize_md(what)}\n"
+        f"- **Decisions:** {_sanitize_md(decisions)}\n"
+        f"- **Next:** {_sanitize_md(next_steps)}\n"
+        f"- **Issues:** {_sanitize_md(issues)}\n"
     )
 
     state_path.write_text(content + entry)
     print("State updated.")
 
 
-def cmd_validate():
+def cmd_validate(run_checker=False):
     specs_dir = Path("specs")
     if not specs_dir.exists():
         print("Error: specs/ directory not found.", file=sys.stderr)
-        sys.exit(1)
-
-    state_path = specs_dir / "state.md"
-    if not state_path.exists():
-        print("Missing: specs/state.md")
         sys.exit(1)
 
     print("=== Validation Report ===")
     all_ok = True
     for name in ["mission.md", "tech-stack.md", "roadmap.md", "state.md"]:
         path = specs_dir / name
-        status = "OK" if path.exists() else "MISSING"
-        if status != "OK":
+        if _has_content(path):
+            status = "OK"
+        elif path.exists():
+            status = "EMPTY or placeholder only"
+            all_ok = False
+        else:
+            status = "MISSING"
             all_ok = False
         print(f"  {name}: {status}")
 
-    has_feature = all((specs_dir / n).exists() for n in ["plan.md", "requirements.md", "validation.md"])
+    has_feature = all(_has_content(specs_dir / n) for n in ["plan.md", "requirements.md", "validation.md"])
     if has_feature:
         print("  feature spec: OK")
+    elif any((specs_dir / n).exists() for n in ["plan.md", "requirements.md", "validation.md"]):
+        print("  feature spec: EMPTY or placeholder only")
+        all_ok = False
     else:
         print("  feature spec: not started (optional)")
 
-    print("Checking @code_checker...")
-    print("  Note: Run '@code_checker' in OpenCode to review the code.")
-    print("  Automatic invocation TBD — run `opencode run '@code_checker'` manually.")
+    if run_checker:
+        print("\nRunning @code_checker...")
+        _run_code_checker()
+    else:
+        print("\nHint: run 'sdd validate --checker' to invoke @code_checker")
+        print("Or in OpenCode TUI: @code_checker")
 
     if all_ok:
-        print("Result: PASS")
+        print("\nResult: PASS")
     else:
-        print("Result: FAIL — missing required files")
+        print("\nResult: FAIL — see issues above")
         sys.exit(1)
 
 
@@ -196,7 +245,9 @@ def main():
     p_state = sub.add_parser("state", help="Manage state.md")
     p_state.add_argument("--current", action="store_true", help="Print current state")
 
-    sub.add_parser("validate", help="Validate project state")
+    p_validate = sub.add_parser("validate", help="Validate project state")
+    p_validate.add_argument("--checker", action="store_true", help="Run @code_checker after validation")
+
     sub.add_parser("status", help="Show spec files status")
 
     args = parser.parse_args()
@@ -208,7 +259,7 @@ def main():
     elif args.command == "state":
         cmd_state(args.current)
     elif args.command == "validate":
-        cmd_validate()
+        cmd_validate(run_checker=args.checker)
     elif args.command == "status":
         cmd_status()
     else:

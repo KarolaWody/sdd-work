@@ -30,4 +30,9 @@
 
 ## Order
 Group 1 → Group 2 → Group 3 → Group 4 → Group 5.
-Each group must pass validation before next group starts.
+
+After EVERY group:
+1. Agent runs `@code_checker`
+2. Agent presents findings to user
+3. User MUST review and approve
+4. ONLY then: next group

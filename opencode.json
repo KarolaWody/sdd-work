@@ -7,19 +7,24 @@
     }
   },
   "instructions": [
-    "specs/state.md"
+    "specs/state.example.md"
   ],
   "permission": {
     "bash": {
       "*": "ask",
-      "git *": "allow",
-      "git commit *": "ask",
-      "git push *": "ask",
-      "grep *": "allow",
-      "ls *": "allow",
-      "mkdir *": "allow",
-      "python *": "allow",
-      "pip *": "allow"
+      "git status": "allow",
+      "git diff": "allow",
+      "git log": "allow",
+      "git commit": "ask",
+      "git push": "ask",
+      "grep": "allow",
+      "ls": "allow",
+      "python sdd.py": "allow",
+      "python -m pytest": "allow",
+      "python -m ruff": "allow",
+      "python -m mypy": "allow",
+      "pip list": "allow",
+      "pip show": "allow"
     }
   }
 }

@@ -1,6 +1,7 @@
-# State — <!-- Project name -->
+# State
 
 > **PRIVATE** — gitignored, not pushed to public repo.
+> Updated at the end of each SDD step for model handoff.
 
 ## Done
 <!-- What was accomplished? -->

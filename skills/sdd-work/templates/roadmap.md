@@ -1,20 +1,20 @@
 # Roadmap
 
-## MVP
+> Tip: Order by importance. MVP = minimal set that solves the core problem.
+
+## MVP ([ ] months)
 - [ ] Feature 1
 - [ ] Feature 2
-- [ ] Feature 3
 
 **Goal:** <!-- What makes this usable? -->
 
-## V2
+## V2 — <!-- theme -->
 - [ ] Enhancement 1
 - [ ] Enhancement 2
 
-**Goal:** <!-- What comes next? -->
+**Goal:** <!-- Added value -->
 
-## V3
-- [ ] Polish 1
-- [ ] Polish 2
+## V3 — <!-- theme -->
+- [ ] Polish / portfolio-ready improvements
 
-**Goal:** <!-- Production-ready / portfolio-ready -->
+**Goal:** <!-- Production-ready / shareable -->

@@ -7,26 +7,32 @@ description: Spec-Driven Development workflow for OpenCode. Automates constituti
 
 ## Workflow
 
-1. **Constitution** — Ask user 8 onboarding questions (see `AGENTS.md`), then create mission.md, tech-stack.md, roadmap.md in a `specs/` folder. Wait for user approval. Commit.
+Agent MUST follow this sequence. No step may be skipped, combined, or reordered.
 
-2. **Feature spec** — Create a feature branch. Discuss the next roadmap item with the user. Create plan.md, requirements.md, validation.md in `specs/features/<feature-name>/`. Wait for user approval. Commit.
+1. **Constitution** — Ask user 8 onboarding questions (see `AGENTS.md`), then create mission.md, tech-stack.md, roadmap.md in a `specs/` folder. User MUST approve. Commit ONLY after approval.
 
-3. **Implementation** — Implement per task groups from the plan. Present all changes to user. Do NOT commit without approval.
+2. **Feature spec** — Create plan.md, requirements.md, validation.md in `specs/`. User MUST approve. Commit ONLY after approval.
 
-4. **Validation** — Run `@code_checker` sub-agent to scan code for weakest spots. Present findings to user. Run any configured tests. Wait for explicit OK before commit or merge.
+3. **Implementation + Validation (per group)**:
+   a. Agent MUST implement ONE task group from the plan
+   b. Agent MUST present all changes to user
+   c. Agent MUST run `@code_checker` sub-agent
+   d. Agent MUST present findings to user
+   e. User MUST review and explicitly approve
+   f. Agent MUST NOT proceed without explicit approval
 
-5. **Replanning** — Propose constitution and process improvements to user. Wait for approval before applying changes.
+4. **Replanning** — Propose improvements. User MUST approve before applying.
 
 ## State file
-At the end of each step, write `specs/state.md` with:
+At the end of each SDD step, write `specs/state.md` with:
 - what was done, decisions, next steps, pending issues
 Enables model handoff — new model reads this file to continue.
 
 ## Rules
-- **One step at a time.** Agent does exactly ONE task from the plan, then stops and presents to user. No grouping multiple tasks.
-- **Ask first.** Agent must ask user for a specific decision before proceeding. No assumptions of consent.
-- **Wait for answer.** Agent waits for an explicit answer to the question asked. No proceeding without a clear user response.
-- Human-in-the-loop always. No autonomous changes.
-- English only.
-- Small steps, frequent commits.
-- Specs are versioned — commit alongside code.
+- **One step at a time.** Agent MUST do exactly ONE task from plan, then stop and present. NO grouping, NO batching.
+- **Ask first.** Agent MUST ask user for a specific decision before proceeding. NO assumptions of consent.
+- **Wait for answer.** Agent MUST wait for explicit user response. No proceeding without clear answer.
+- **@code_checker after EVERY group.** Mandatory. NO exceptions.
+- **Questions ≠ consent.** User questions, observations, or statements are NOT approval. Only explicit commands ('fix', 'remove', 'do', 'change', 'implement') count as consent. After answering a question, agent MUST ask "Should I apply this change?" and wait for explicit 'yes'.
+- **No autonomy.** Agent MUST NOT make any decision without user approval. Without approval: STOP.
+- English only. Small steps. Specs versioned.

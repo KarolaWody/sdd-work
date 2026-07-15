@@ -24,6 +24,20 @@
 9. `python sdd.py --help` and `python sdd.py init --help` show meaningful help
 10. Invalid command → exit code 1 + error message
 
+### VC7 — Post-group @code_checker
+11. Agent implements ONE task group
+12. Agent runs `@code_checker` sub-agent
+13. Agent presents all findings to user
+
+### VC8 — User approval gate
+14. User MUST review findings
+15. User MUST explicitly approve
+16. Agent MUST STOP and MUST NOT proceed without approval
+
+### VC9 — No batching
+17. Agent MUST NOT implement >1 group without approval
+18. Agent MUST NOT combine, skip, or reorder any steps
+
 ## Test procedure
 ```bash
 # Create temp directory
